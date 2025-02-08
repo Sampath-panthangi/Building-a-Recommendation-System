@@ -1,0 +1,104 @@
+Project Title
+Building a Recommendation System with Collaborative Filtering in PySpark
+
+Steps to Use in Azure Databricks Notebook
+#Upload the CSV File to DBFS
+#We can upload the user_ratings.csv file to DBFS using the following command in a notebook cell:
+
+dbutils.fs.put("/FileStore/user_ratings.csv", """
+user_id,movie_id,rating
+1,101,5
+1,102,3
+1,103,2
+2,101,4
+2,104,5
+2,105,4
+3,101,2
+3,102,5
+3,104,3
+4,103,5
+4,104,4
+5,102,4
+5,103,3
+5,105,5
+6,101,3
+6,102,4
+6,103,4
+7,104,5
+7,105,4
+8,101,5
+8,102,2
+9,103,4
+9,104,5
+10,105,3
+""", overwrite=True)
+
+
+---------------------------------------------------------------------------------------------------
+
+#PySpark Code for Building the Recommendation System
+
+# Step 1: Read the user ratings CSV file
+ratings_df = spark.read.csv("/FileStore/user_ratings.csv", header=True, inferSchema=True)
+
+# Step 2: Create a Temporary View
+ratings_df.createOrReplaceTempView("user_ratings")
+
+# Step 3: Build the Recommendation System using Collaborative Filtering
+from pyspark.ml.recommendation import ALS
+
+# Create an ALS model
+als = ALS(
+    maxIter=10,
+    regParam=0.01,
+    userCol="user_id",
+    itemCol="movie_id",
+    ratingCol="rating",
+    coldStartStrategy="drop"
+)
+
+# Fit the model
+model = als.fit(ratings_df)
+
+# Step 4: Make recommendations
+# Generate recommendations for all users
+user_recs = model.recommendForAllUsers(5)
+
+# Display the recommendations
+display(user_recs)
+
+----------------------------------------------------------------------------------------------------------
+
+Explanation of the Code:
+=======================
+Reading the CSV: The CSV file containing user ratings is read into a DataFrame with header information and schema inferred.
+Creating a Temporary View: The DataFrame is registered as a temporary view to facilitate SQL queries if needed.
+
+
+Building the Recommendation System:
+===================================
+An Alternating Least Squares (ALS) model is instantiated with parameters such as the maximum number of iterations and regularization parameter.
+
+The model is fitted using the user ratings data.
+
+Generating Recommendations: The model generates recommendations for all users, returning the top 5 recommended movies for each user.
+
+Display Recommendations: The generated recommendations are displayed for analysis.
+
+----------------------------------------------------------------------------------------------------------
+
+Project Title
+Building a Recommendation System with Collaborative Filtering in PySpark
+
+Abstract
+This project focuses on developing a recommendation system using collaborative filtering techniques to enhance user experience by providing personalized movie recommendations. The dataset comprises user ratings for various movies, enabling us to analyze user preferences and behaviors.
+
+The project begins with the importation of user ratings data, which includes user IDs, movie IDs, and corresponding ratings. Utilizing PySpark's powerful machine learning library, we implement an Alternating Least Squares (ALS) algorithm, a widely used method for collaborative filtering.
+
+Key steps include:
+
+Data Preparation: The user ratings data is loaded and transformed into a DataFrame for further analysis.
+Model Training: We instantiate and fit the ALS model on the user ratings, optimizing it through hyperparameters such as maximum iterations and regularization parameters.
+Generating Recommendations: The trained model generates movie recommendations for all users, suggesting the top-rated films based on collaborative filtering.
+
+The resulting recommendations are displayed, offering insights into user preferences and potential engagement strategies. This project showcases the effectiveness of collaborative filtering in building recommendation systems, which can be applied in various domains beyond entertainment, such as e-commerce and online services.
